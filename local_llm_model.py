@@ -12,42 +12,6 @@ import os
 import re
 import tiktoken
 
-
-def _make_request() -> PipelineRequest[HttpRequest]:
-    return PipelineRequest(HttpRequest("CredentialWrapper", "https://fakeurl"), PipelineContext(None))
-
-
-def get_bearer_token_provider(credential: TokenCredential, *scopes: str) -> Callable[[], str]:
-
-    policy = BearerTokenCredentialPolicy(credential, *scopes)
-
-    def wrapper() -> str:
-        request = _make_request()
-        policy.on_request(request)
-        return request.http_request.headers["Authorization"][len("Bearer ") :]
-
-    return wrapper
-
-def openai_client(targets):
-
-    if targets == "aml":
-        credential = DefaultAzureCredential(managed_identity_client_id="e6162a0d-e540-4454-995f-30bcb97f35b4")
-    elif targets == "sing":
-        credential = DefaultAzureCredential()
-
-    token_provider = get_bearer_token_provider(
-        credential,
-        "https://cognitiveservices.azure.com/.default"
-    )
-
-    client = AzureOpenAI(
-        api_version="2024-08-01-preview",
-        azure_endpoint="https://cs-newsandfeeds-singularity-aoai.openai.azure.com/",
-        azure_ad_token_provider=token_provider
-    )
-
-    return client
-
 def get_ans2(prompt):
     # 需要修改为自己的智谱的api_key
     print(prompt)
